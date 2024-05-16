@@ -1,14 +1,25 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    function changePageTrackerStatus(){
+  <script src="https://cdn.tailwindcss.com" ></script>
+  <!-- <script type="importmap" >
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@<version>/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@<version>/examples/jsm/"
+      }
+    }
+  </script>
+   -->
+   <script>
+    function changePageTrackerStatus()
+    {
         document.getElementById("scrollTracker").width+=2;
     }
-    function showMenu(){
+    function showMenu()
+    {
       var target = document.getElementById("menu");
       if(target.style.display == "none"){
         document.getElementById("menu").style.display = 'flex';
@@ -16,69 +27,164 @@
         document.getElementById("menu").style.display = 'none';
       }
     }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const particles = [];
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let particleCount = 100;
+    let backgroundColor = "black";
+    let normalRadius = 3;
+    let increasedRadius = 6;
+    let shadowBlur = 5; // Shadow blur value
+    let twinklingProbability = 0.02; // Probability of a particle twinkling in each frame
+
+    // Set canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Particle {
+        constructor(x, y, radius, color, speed) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color = color;
+            this.speed = speed;
+            this.opacity = 1; // Initial opacity
+            this.twinkle = Math.random() < twinklingProbability; // Randomly set if particle twinkles
+            this.setVibrations = false;
+        }
+
+        getRandomValue(){
+          return (Math.random()*10>5)?1:-1;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.shadowBlur = shadowBlur;
+            ctx.shadowColor = 'white'; // Shadow color
+            ctx.globalAlpha = this.opacity;
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        update() {
+            this.x += this.speed+((this.setVibrations)?this.getRandomValue():0);
+            this.y += this.speed+((this.setVibrations)?this.getRandomValue():0);
+            if (this.x > canvas.width + this.radius || this.x < -this.radius) {
+                this.speed = -this.speed;
+            }
+            if (this.y > canvas.height + this.radius || this.y < -this.radius) {
+                this.speed = -this.speed;
+            }
+
+            // Randomly change opacity for twinkling effect
+            if (this.twinkle && Math.random() < twinklingProbability) {
+                this.opacity = Math.random();
+            } else {
+                this.opacity = 1;
+            }
+        }
+
+        increaseSize() {
+            this.radius = increasedRadius;
+        }
+
+        resetSize() {
+            this.radius = normalRadius;
+        }
+    }
+
+    function init() {
+        for (let i = 0; i < particleCount; i++) {
+            const radius = normalRadius;
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.8)`;
+            const speed = (Math.random() - 0.5) * 2; // random speed between -1 and 1
+            particles.push(new Particle(x, y, radius, color, speed));
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(particle => {
+            particle.update();
+            particle.draw();
+        });
+    }
+
+    function increaseSizeForAllParticles() {
+        particles.forEach(particle => {
+            particle.increaseSize();
+        });
+    }
+
+    function resetSizeForAllParticles() {
+        particles.forEach(particle => {
+            particle.resetSize();
+        });
+    }
+
+    function setParticleVibrations(){
+      particles.forEach(particle=>{
+        particle.setVibrations = true;
+      })
+    }
+
+    function resetParticleVibrations(){
+      particles.forEach(particle=>{
+        particle.setVibrations = false;
+      })
+    }
+
+
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === ' ') { // Check if spacebar is pressed
+            increaseSizeForAllParticles();
+        }else if(event.key === 'n'){
+          setParticleVibrations();
+        }
+    });
+
+    document.addEventListener('keyup', (event) => {
+        if (event.key === ' ') { // Check if spacebar is released
+            resetSizeForAllParticles();
+        }else if(event.key === 'n'){
+          resetParticleVibrations();
+        }
+    });
+
+    init();
+    animate();
+});
   </script>
 </head>
-<body onscroll="changePageTrackerStatus()">
-  <button onclick="showMenu()" class="lg:hidden sm:visible md:hidden flex flex-wrap justify-center w-full bg-blue-500 text-center backdrop-opacity-10 bg-cyan-700">
+<body onscroll="changePageTrackerStatus()"  class="bg-opacity-0">
+  <!-- <button onclick="showMenu()" class="lg:hidden sm:visible md:hidden flex flex-wrap justify-center w-full bg-blue-500 text-center backdrop-opacity-10 bg-cyan-700">
     Open Menu
-  </button>
-  <nav id="menu" class="hidden flex flex-col md:visible lg:vsisble xl:visible md:flex md:flex-row flex-wrap flex-around items-center justify-evenly mx-auto p-4 bg-green-500">
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='/portfolio/routes/about.html'">ABout</button>
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='/portfolio/routes/projects.html'">My Projects</button>
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='/portfolio/routes/skills.html'">Skills</button>
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='/portfolio/routes/contact.html'">Contact</button>
-  </nav>
-  <div class="flex flex-wrap justify-center w-full h-80 bg-blue-500 text-center backdrop-opacity-10 bg-gradient-to-r from-cyan-500 to-blue-500">
+  </button> -->
+ <canvas id="canvas" class="fixed w-full min-h-screen z-0">
+
+ </canvas>
+  <div class="fixed flex flex-col flex-nowrap justify-center w-full min-h-screen text-center bg-opacity-0 z-10 text-white">
     <span class="m-20 text-4xl">
       Welcome to the page
+    </span>
+    <nav id="menu" class="flex flex-col md:visible lg:vsisble xl:visible md:flex md:flex-row justify-center mx-auto p-4 ">
+      <!-- <button class="sm:m-2 md:m-2 xs:m-2 p-2 border border-2  text-[#FEE715FF] hover:text-black hover:bg-[#FEE715FF]" onclick="window.location='/portfolio/routes/about.html'">ABout</button> -->
+      <button class="sm:m-2 md:m-2 xs:m-2 p-4 border border-2  text-xl text-white hover:text-black hover:bg-[rgba(255,255,255,0.5)]  hover:translate-y-3 duration-200 " onclick="window.location='/routes/projects.html'">My Projects</button>
+      <button class="sm:m-2 md:m-2 xs:m-2 p-4 border border-2 text-xl  text-white hover:text-black hover:bg-[rgba(255,255,255,0.5)] hover:translate-y-3 duration-200 ease-in-out transition" onclick="window.location='/routes/skills.html'">Skills</button>
+      <button class="sm:m-2 md:m-2 xs:m-2 p-4 border border-2 text-xl  text-white hover:text-black hover:bg-[rgba(255,255,255,0.5)] hover:translate-y-3 duration-200 ease-in-out transition" onclick="window.location='/routes/contact.html'">Contact</button>
+    </nav>
   </div>
-  <div class="grid sm:grid-cols-1 lg:grid-cols-2 w-full h-full bg-blue-500  backdrop-opacity-10 bg-gradient-to-r from-green-500 to-blue-500">
-      
-    <div class="float-left font-sans m-10 text-xl text-justify">
-      <h2 class="text-2xl">Welcome to My Portfolio!</h2>
-<br>
-  Hey there! I'm [Your Name], a passionate software developer dedicated to crafting clean, efficient, and user-friendly 
-  solutions. With a background in [mention any relevant education or experience], I thrive on tackling complex problems 
-  and turning them into elegant, intuitive software solutions.
-<p class="mt-2">
-  <em>What I Do</em>
-
-Whether it's developing robust web applications, creating mobile apps that enhance user experience, 
-or architecting scalable backend systems, I'm driven by a relentless pursuit of excellence in software development.
- My expertise lies in [mention your main areas of expertise, e.g., front-end development, back-end development,
-  full-stack development, etc.].
-</p>
-      </div>
-      <div class="float-right m-10">
-      <img src="https://images.pexels.com/photos/20543264/pexels-photo-20543264/free-photo-of-the-morning-of-chang-jiang-river-wu-han.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="scale-50" srcset=""/>
-      </div>
-
-  </div>
-  <div class="grid sm:grid-cols-1 lg:grid-cols-2 w-full h-full bg-blue-500  backdrop-opacity-10 bg-gradient-to-r from-green-500 to-blue-500">
-      
-    <div class="float-left m-10">
-      <img src="https://images.pexels.com/photos/20543264/pexels-photo-20543264/free-photo-of-the-morning-of-chang-jiang-river-wu-han.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="scale-50" srcset=""/>
-      </div>
-    <div class="float-right font-sans m-10 text-xl text-justify">
-      <h2 class="text-2xl">Welcome to My Portfolio!</h2>
-<br>
-  Hey there! I'm [Your Name], a passionate software developer dedicated to crafting clean, efficient, and user-friendly 
-  solutions. With a background in [mention any relevant education or experience], I thrive on tackling complex problems 
-  and turning them into elegant, intuitive software solutions.
-<p class="mt-2">
-  <em>What I Do</em>
-
-Whether it's developing robust web applications, creating mobile apps that enhance user experience, 
-or architecting scalable backend systems, I'm driven by a relentless pursuit of excellence in software development.
- My expertise lies in [mention your main areas of expertise, e.g., front-end development, back-end development,
-  full-stack development, etc.].
-</p>
-      </div>
-      
-
-  </div>
-  <footer class="flex flex-wrap justify-center w-full py-10 bg-blue-500 text-center backdrop-opacity-10 bg-gradient-to-r from-black-500 to-grey-500">
-    Copyright © [Year] [Your Company/Organization Name]. <br>All rights reserved. | Terms of Service | Privacy Policy | Contact Us
-  </footer>
+ 
 </body>
 </html>

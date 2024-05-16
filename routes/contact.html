@@ -1,14 +1,25 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" ></script>
+  <!-- <script type="importmap" >
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@<version>/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@<version>/examples/jsm/"
+      }
+    }
+  </script>
+   -->
   <script>
-    function changePageTrackerStatus(){
+    function changePageTrackerStatus()
+    {
         document.getElementById("scrollTracker").width+=2;
     }
-    function showMenu(){
+    function showMenu()
+    {
       var target = document.getElementById("menu");
       if(target.style.display == "none"){
         document.getElementById("menu").style.display = 'flex';
@@ -16,67 +27,261 @@
         document.getElementById("menu").style.display = 'none';
       }
     }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const particles = [];
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let particleCount = 100;
+    let backgroundColor = "black";
+    let normalRadius = 3;
+    let increasedRadius = 6;
+    let shadowBlur = 5; // Shadow blur value
+    let twinklingProbability = 0.02; // Probability of a particle twinkling in each frame
+
+    // Set canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Particle {
+        constructor(x, y, radius, color, speed) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color = color;
+            this.speed = speed;
+            this.opacity = 1; // Initial opacity
+            this.twinkle = Math.random() < twinklingProbability; // Randomly set if particle twinkles
+            this.setVibrations = false;
+        }
+
+        getRandomValue(){
+          return (Math.random()*10>5)?1:-1;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.shadowBlur = shadowBlur;
+            ctx.shadowColor = 'white'; // Shadow color
+            ctx.globalAlpha = this.opacity;
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        update() {
+            this.x += this.speed+((this.setVibrations)?this.getRandomValue():0);
+            this.y += this.speed+((this.setVibrations)?this.getRandomValue():0);
+            if (this.x > canvas.width + this.radius || this.x < -this.radius) {
+                this.speed = -this.speed;
+            }
+            if (this.y > canvas.height + this.radius || this.y < -this.radius) {
+                this.speed = -this.speed;
+            }
+
+            // Randomly change opacity for twinkling effect
+            if (this.twinkle && Math.random() < twinklingProbability) {
+                this.opacity = Math.random();
+            } else {
+                this.opacity = 1;
+            }
+        }
+
+        increaseSize() {
+            this.radius = increasedRadius;
+        }
+
+        resetSize() {
+            this.radius = normalRadius;
+        }
+    }
+
+    function init() {
+        for (let i = 0; i < particleCount; i++) {
+            const radius = normalRadius;
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.8)`;
+            const speed = (Math.random() - 0.5) * 2; // random speed between -1 and 1
+            particles.push(new Particle(x, y, radius, color, speed));
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(particle => {
+            particle.update();
+            particle.draw();
+        });
+    }
+
+    function increaseSizeForAllParticles() {
+        particles.forEach(particle => {
+            particle.increaseSize();
+        });
+    }
+
+    function resetSizeForAllParticles() {
+        particles.forEach(particle => {
+            particle.resetSize();
+        });
+    }
+
+    function setParticleVibrations(){
+      particles.forEach(particle=>{
+        particle.setVibrations = true;
+      })
+    }
+
+    function resetParticleVibrations(){
+      particles.forEach(particle=>{
+        particle.setVibrations = false;
+      })
+    }
+
+
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === ' ') { // Check if spacebar is pressed
+            increaseSizeForAllParticles();
+        }else if(event.key === 'n'){
+          setParticleVibrations();
+        }
+    });
+
+    document.addEventListener('keyup', (event) => {
+        if (event.key === ' ') { // Check if spacebar is released
+            resetSizeForAllParticles();
+        }else if(event.key === 'n'){
+          resetParticleVibrations();
+        }
+    });
+
+    init();
+    animate();
+});
   </script>
 </head>
-<body onscroll="changePageTrackerStatus()">
-  <button onclick="showMenu()" class="lg:hidden sm:visible md:hidden flex flex-wrap justify-center w-full bg-blue-500 text-center backdrop-opacity-10 bg-cyan-700">
+<body onscroll="changePageTrackerStatus()"  class="bg-opacity-0">
+  <!-- <button onclick="showMenu()" class="lg:hidden sm:visible md:hidden flex flex-wrap justify-center w-full bg-blue-500 text-center backdrop-opacity-10 bg-cyan-700">
     Open Menu
-  </button>
-  <nav id="menu" class="hidden flex flex-col md:visible lg:vsisble xl:visible md:flex md:flex-row flex-wrap flex-around items-center justify-evenly mx-auto p-4 bg-green-500">
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='about.html'">ABout</button>
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='projects.html'">My Projects</button>
-    <button class="sm:m-2 md:m-2 xs:m-2" onclick="window.location='skills.html'">Skills</button>
-    <button class="sm:m-2 md:m-2 xs:m-2 overline decoration-4" onclick="window.location='contact.html'">Contact</button>
-  </nav>
-  <div class="flex flex-wrap justify-center w-full h-80 bg-blue-500 text-center backdrop-opacity-10 bg-gradient-to-r from-cyan-500 to-blue-500">
-    <span class="m-20 text-4xl">
-      Contact Me
-    </span>
-  </div>
-  <div class="flex flex-col items-center md:flex-row lg:flex-row md:justify-evenly lg:justify-evenly  py-20 bg-blue-500  backdrop-opacity-10 bg-gradient-to-r from-green-500 to-blue-500">
-      
-    <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25 ">
-        <img class="scale-75" src="../assets/Github.png" >
-        <div class="px-6 py-4">
-          <div class="font-bold text-xl mb-2">My Github Profile</div>
-          <div class=" text-lg mb-2 italic">@Nileshthakur2003</div>
-          <p class="text-gray-700 text-base">
-            <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
-                Visit Github profile.
-            </button>
-          </p>
-        </div>
-    </div>
-    <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25">
-        <img class="scale-75" src="../assets/Github.png" >
-        <div class="px-6 py-4">
-          <div class="font-bold text-xl mb-2">My Github Profile</div>
-          <div class=" text-lg mb-2 italic">@Nileshthakur2003</div>
-          <p class="text-gray-700 text-base">
-            <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
-                Visit github profile.
-            </button>
-          </p>
-        </div>
-    </div>
-    <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25">
-        <img class="scale-75 " src="../assets/LinkedIN.png" >
-        <div class="px-6 py-4">
-          <div class="font-bold text-xl mb-2">My LinkedIn Profile</div>
-          <div class="text-lg mb-2 italic">@</div>
-          <p class="text-gray-700 text-base">
-            <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
-            Visit LinkedIn profile.
-            </button>
-          </p>
-        </div>
-    </div>
+  </button> -->
+ <canvas id="canvas" class="fixed w-full min-h-screen z-[-1]">
 
+ </canvas>
+  <div class="flex flex-col content-center flex-wrap justify-center w-full text-center bg-opacity-0 z-10 text-white">
+    <div class="block flex flex-col text-4xl text-center m-10 ">
+      <button class="hover:text-gray-700 border border-2 w-1/5" onclick="window.location='../index.html'">
+        <span class="invisible lg:visible md:visible xl:visible">back</span>
+      </button>&nbsp;
+      <span class="block flex flex-row text-4xl text-center m-10">
+         <b class="text-6xl"> | Contact Me</b>
+      </span>
+      
+    </div>
+    <div class="flex flex-col lg:flex-row xl:flex-row md:flex-row block">
+    <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25 h-[max-content] bg-[rgba(255,255,255,0.3)] hover:scale-125 duration-200">
+      <img class="scale-75" src="../assets/Github.png" >
+      <div class="px-6 py-4">
+        <div class="font-bold text-xl mb-2">My Github Profile</div>
+        <div class=" text-lg mb-2 italic">@Nileshthakur2003</div>
+        <p class="text-gray-700 text-base">
+          <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+              Visit Github profile.
+          </button>
+        </p>
+      </div>
   </div>
   
+  <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25 h-[max-content] bg-[rgba(255,255,255,0.3)]  hover:scale-125 duration-200">
+      <img class="scale-75" src="../assets/Github.png" >
+      <div class="px-6 py-4">
+        <div class="font-bold text-xl mb-2">My Github Profile</div>
+        <div class=" text-lg mb-2 italic">@Nileshthakur2003</div>
+        <p class="text-gray-700 text-base">
+          <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+              Visit github profile.
+          </button>
+        </p>
+      </div>
+  </div>
+  <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25 h-[max-content] bg-[rgba(255,255,255,0.3)]  hover:scale-125 duration-200">
+      <img class="scale-75 " src="../assets/LinkedIN.png" >
+      <div class="px-6 py-4">
+        <div class="font-bold text-xl mb-2">My LinkedIn Profile</div>
+        <div class="text-lg mb-2 italic">@</div>
+        <p class="text-gray-700 text-base">
+          <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+          Visit LinkedIn profile.
+          </button>
+        </p>
+      </div>
+  </div>
+  </div>
+  </div>
+  
+  <!-- <div class="flex flex-col items-center md:flex-row lg:flex-row md:justify-evenly lg:justify-evenly  py-20 backdrop-opacity-10 text-white">
       
-  <footer class="flex flex-wrap justify-center w-full py-10 bg-blue-500 text-center backdrop-opacity-10 bg-gradient-to-r from-black-500 to-grey-500">
-    Copyright © [Year] [Your Company/Organization Name]. <br>All rights reserved. | Terms of Service | Privacy Policy | Contact Us
-  </footer>
+    
+  
+  </div> -->
+ 
 </body>
 </html>
+
+
+<!--
+
+<div class="flex flex-wrap justify-center w-full h-80 bg-blue-500 text-center backdrop-opacity-10 bg-gradient-to-r from-cyan-500 to-blue-500">
+  <span class="m-20 text-4xl">
+    Contact Me
+  </span>
+</div>
+<div class="flex flex-col items-center md:flex-row lg:flex-row md:justify-evenly lg:justify-evenly  py-20 bg-blue-500  backdrop-opacity-10 bg-gradient-to-r from-green-500 to-blue-500">
+    
+  <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25 ">
+      <img class="scale-75" src="../assets/Github.png" >
+      <div class="px-6 py-4">
+        <div class="font-bold text-xl mb-2">My Github Profile</div>
+        <div class=" text-lg mb-2 italic">@Nileshthakur2003</div>
+        <p class="text-gray-700 text-base">
+          <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+              Visit Github profile.
+          </button>
+        </p>
+      </div>
+  </div>
+  <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25">
+      <img class="scale-75" src="../assets/Github.png" >
+      <div class="px-6 py-4">
+        <div class="font-bold text-xl mb-2">My Github Profile</div>
+        <div class=" text-lg mb-2 italic">@Nileshthakur2003</div>
+        <p class="text-gray-700 text-base">
+          <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+              Visit github profile.
+          </button>
+        </p>
+      </div>
+  </div>
+  <div class="max-w-sm rounded-lg m-5 border border-2 overflow-hidden hover:shadow-2xl px-25">
+      <img class="scale-75 " src="../assets/LinkedIN.png" >
+      <div class="px-6 py-4">
+        <div class="font-bold text-xl mb-2">My LinkedIn Profile</div>
+        <div class="text-lg mb-2 italic">@</div>
+        <p class="text-gray-700 text-base">
+          <button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+          Visit LinkedIn profile.
+          </button>
+        </p>
+      </div>
+  </div>
+
+</div>
+
+
+-->
